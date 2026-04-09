@@ -1,0 +1,393 @@
+{
+  "name": "BrightSmile Lead Sync",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "e37c6d2d-39b2-4902-a866-46d8b132aac1",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -928,
+        0
+      ],
+      "id": "dce963bc-0e38-4818-996a-23cc56430f9b",
+      "name": "Webhook",
+      "webhookId": "e37c6d2d-39b2-4902-a866-46d8b132aac1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "5d585b5e-ff96-48e7-aeef-1d7bde490bcd",
+              "leftValue": "={{ $json.body.fullName }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "f719e74f-0b19-40a1-9523-0f231b9a12ff",
+              "leftValue": "={{ $json.body.email }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "8af60cf1-af56-453b-8258-5b3c9b77a669",
+              "leftValue": "={{ $json.body.phone }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -720,
+        0
+      ],
+      "id": "8dd50733-b7f7-4db1-8609-1a4db433e4fc",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://services.leadconnectorhq.com/contacts/upsert",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Version",
+              "value": "2021-07-28"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"locationId\": \"8clyiYzuHWX5AUybjcrY\",\n  \"name\": \"{{ $json.body.fullName }} \",\n  \"email\": \"{{ $json.body.email }}\",\n  \"phone\": \"{{ $json.body.phone }}\",\n  \"source\": \"Website Landing Page\",\n  \"customFields\": [\n  {\n    \"key\": \"service_interested_in\",\n    \"field_value\": [\"{{ $('Webhook').item.json.body.service }}\"]\n  },\n  {\n    \"key\": \"preferred_appointment_date\", \n    \"field_value\": \"{{ $('Webhook').item.json.body.preferredDate }}\"\n  }\n ],\n  \"tags\": [\"Website Landing Page\"]\n}",
+        "options": {
+          "response": {}
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -496,
+        -16
+      ],
+      "id": "b0df8d46-4d90-4555-83a3-3f95eec8d7fc",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "tnbZKspDjIKt8EdT",
+          "name": "Ghl Api Integration"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1d2Oxscfx2u69zRuG11gKXdVJ-DiXtoQKBAs2SE1NsDI",
+          "mode": "list",
+          "cachedResultName": "BrightSmile Lead Tracker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1d2Oxscfx2u69zRuG11gKXdVJ-DiXtoQKBAs2SE1NsDI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Leads",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1d2Oxscfx2u69zRuG11gKXdVJ-DiXtoQKBAs2SE1NsDI/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date": "={{ $now }}",
+            "Name": "={{ $json.contact.fullNameLowerCase }}",
+            "Status": "New Lead",
+            "Phone": "={{ $json.contact.phone }}",
+            "Email": "={{ $json.contact.emailLowerCase }}",
+            "Service": "={{ $('Webhook').item.json.body.service }}",
+            "Appointment Date": "={{ $('Webhook').item.json.body.preferredDate }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Service",
+              "displayName": "Service",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Appointment Date",
+              "displayName": "Appointment Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -256,
+        -16
+      ],
+      "id": "6d770f37-ed8d-447b-ab73-26a2a8a31a15",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "GVQWJL0Pd2Ysx4E0",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1d2Oxscfx2u69zRuG11gKXdVJ-DiXtoQKBAs2SE1NsDI",
+          "mode": "list",
+          "cachedResultName": "BrightSmile Lead Tracker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1d2Oxscfx2u69zRuG11gKXdVJ-DiXtoQKBAs2SE1NsDI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 132040056,
+          "mode": "list",
+          "cachedResultName": "Error Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1d2Oxscfx2u69zRuG11gKXdVJ-DiXtoQKBAs2SE1NsDI/edit#gid=132040056"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Error Message": "Missing required fields",
+            "Date": "={{ $now }}",
+            "Payload": "={{ $json }}",
+            "Workflow": "Form Submission"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Error Message",
+              "displayName": "Error Message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Payload",
+              "displayName": "Payload",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Workflow",
+              "displayName": "Workflow",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -720,
+        240
+      ],
+      "id": "e10d6dd8-82ad-48ce-932e-f7400bc17d16",
+      "name": "Append row in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "GVQWJL0Pd2Ysx4E0",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"success\": true,\n  \"message\": \"Appointment booked successfully\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -16,
+        -16
+      ],
+      "id": "872f750e-5808-4586-9eb7-a95ec0fb5cd7",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Append row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "30b35cd8-0389-430b-96da-e6a013be47bb",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "038bb611beb2c2bbfbc055da593954c3fce5f18606d1dd398dc82899f55fc384"
+  },
+  "id": "zRYnPwRnZkFGOadB",
+  "tags": []
+}
